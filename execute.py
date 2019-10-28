@@ -6,11 +6,16 @@ import torch.nn as nn
 from models import DGI, LogReg
 from utils import process
 
+from sklearn.manifold import TSNE
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+
 dataset = 'cora'
 
 # training params
 batch_size = 1
-nb_epochs = 10000
+nb_epochs = 1  # 10000
 patience = 20
 lr = 0.001
 l2_coef = 0.0
@@ -21,6 +26,9 @@ nonlinearity = 'prelu' # special name to separate parameters
 
 adj, features, labels, idx_train, idx_val, idx_test = process.load_data(dataset)
 features, _ = process.preprocess_features(features)
+# L = labels
+L = np.array([np.where(r == 1)[0][0] for r in labels])
+# print(L.dtype)
 
 nb_nodes = features.shape[0]
 ft_size = features.shape[1]
@@ -112,18 +120,21 @@ val_lbls = torch.argmax(labels[0, idx_val], dim=1)
 test_lbls = torch.argmax(labels[0, idx_test], dim=1)
 
 tot = torch.zeros(1)
-tot = tot.cuda()
+if torch.cuda.is_available():
+    tot = tot.cuda()
 
 accs = []
 
 for _ in range(50):
     log = LogReg(hid_units, nb_classes)
     opt = torch.optim.Adam(log.parameters(), lr=0.01, weight_decay=0.0)
-    log.cuda()
+    if torch.cuda.is_available():
+        log.cuda()
 
     pat_steps = 0
     best_acc = torch.zeros(1)
-    best_acc = best_acc.cuda()
+    if torch.cuda.is_available():
+        best_acc = best_acc.cuda()
     for _ in range(100):
         log.train()
         opt.zero_grad()
@@ -147,3 +158,22 @@ accs = torch.stack(accs)
 print(accs.mean())
 print(accs.std())
 
+
+# print(features.shape, embeds.shape)
+
+embeds = embeds.cpu().numpy()
+embeds = embeds.reshape((embeds.shape[1], -1))
+# print(embeds.shape)
+embeds = TSNE(n_components=2).fit_transform(embeds)
+# >>> X_embedded.shape
+sns.set(context="paper", style="white")
+
+fig, ax = plt.subplots(figsize=(12, 10))
+color = L.astype(int)
+plt.scatter(
+    embeds[:, 0], embeds[:, 1], c=color, cmap="Spectral", s=1
+)
+plt.setp(ax, xticks=[], yticks=[])
+# plt.title("MNIST data embedded into two dimensions by UMAP", fontsize=18)
+
+plt.show()
