@@ -7,6 +7,7 @@ from models import DGI, LogReg
 from utils import process
 
 from sklearn.manifold import TSNE
+import umap
 import matplotlib.pyplot as plt
 import seaborn as sns
 
@@ -160,18 +161,32 @@ print(accs.std())
 
 
 # print(features.shape, embeds.shape)
-
+embeds = features
 embeds = embeds.cpu().numpy()
 embeds = embeds.reshape((embeds.shape[1], -1))
-# print(embeds.shape)
-embeds = TSNE(n_components=2).fit_transform(embeds)
+
+print(embeds.shape)
+
+embeds_TSNE = TSNE(n_components=2).fit_transform(embeds)
+embeds_UMAP = umap.UMAP(n_components=2).fit_transform(embeds)
+
 # >>> X_embedded.shape
 sns.set(context="paper", style="white")
 
 fig, ax = plt.subplots(figsize=(12, 10))
 color = L.astype(int)
 plt.scatter(
-    embeds[:, 0], embeds[:, 1], c=color, cmap="Spectral", s=1
+    embeds_TSNE[:, 0], embeds_TSNE[:, 1], c=color, cmap="Spectral", s=10
+)
+plt.setp(ax, xticks=[], yticks=[])
+# plt.title("MNIST data embedded into two dimensions by UMAP", fontsize=18)
+
+plt.show()
+
+fig, ax = plt.subplots(figsize=(12, 10))
+color = L.astype(int)
+plt.scatter(
+    embeds_UMAP[:, 0], embeds_UMAP[:, 1], c=color, cmap="Spectral", s=10
 )
 plt.setp(ax, xticks=[], yticks=[])
 # plt.title("MNIST data embedded into two dimensions by UMAP", fontsize=18)
