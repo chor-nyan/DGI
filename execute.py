@@ -11,25 +11,46 @@ import umap
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+from sklearn.model_selection import train_test_split
+from sklearn.neighbors import KNeighborsClassifier
 
-dataset = 'cora'
+# dataset = 'cora'
+dataset = 'citeseer'
+# dataset = 'pubmed'
 
 # training params
 batch_size = 1
-nb_epochs = 1  # 10000
+nb_epochs = 10000
 patience = 20
 lr = 0.001
 l2_coef = 0.0
 drop_prob = 0.0
-hid_units = 512
+hid_units = 256 if dataset == 'pubmed' else 512
+
 sparse = True
 nonlinearity = 'prelu' # special name to separate parameters
 
 adj, features, labels, idx_train, idx_val, idx_test = process.load_data(dataset)
 features, _ = process.preprocess_features(features)
+
+nolabel = []
+for i, r in enumerate(labels):
+    if all(r == 0):
+        nolabel.append(i)
+print(nolabel)
+
 # L = labels
-L = np.array([np.where(r == 1)[0][0] for r in labels])
-# print(L.dtype)
+L = []
+for i, r in enumerate(labels):
+    if i in nolabel:
+        L.append(labels.shape[1])
+    else:
+        L.append(np.where(r == 1)[0][0])
+
+
+# L = np.array([np.where(r == 1)[0][0] for r in labels])
+L = np.array(L)
+print(L)
 
 nb_nodes = features.shape[0]
 ft_size = features.shape[1]
@@ -161,34 +182,72 @@ print(accs.std())
 
 
 # print(features.shape, embeds.shape)
-embeds = features
+# embeds = features
 embeds = embeds.cpu().numpy()
 embeds = embeds.reshape((embeds.shape[1], -1))
 
+org_features = features.cpu().numpy()
+org_features = org_features.reshape((org_features.shape[1], -1))
+
 print(embeds.shape)
+print(org_features.shape)
 
-embeds_TSNE = TSNE(n_components=2).fit_transform(embeds)
-embeds_UMAP = umap.UMAP(n_components=2).fit_transform(embeds)
+embeds_TSNE_DGI = TSNE(n_components=2).fit_transform(embeds)
+# embeds_UMAP = umap.UMAP(n_components=2).fit_transform(org_features)
+embeds_UMAP_DGI = umap.UMAP(n_components=2).fit_transform(embeds)
 
-# >>> X_embedded.shape
 sns.set(context="paper", style="white")
 
 fig, ax = plt.subplots(figsize=(12, 10))
 color = L.astype(int)
 plt.scatter(
-    embeds_TSNE[:, 0], embeds_TSNE[:, 1], c=color, cmap="Spectral", s=10
+    embeds_TSNE_DGI[:, 0], embeds_TSNE_DGI[:, 1], c=color, cmap="Spectral", s=10
 )
 plt.setp(ax, xticks=[], yticks=[])
 # plt.title("MNIST data embedded into two dimensions by UMAP", fontsize=18)
 
 plt.show()
+
+# fig, ax = plt.subplots(figsize=(12, 10))
+# color = L.astype(int)
+# plt.scatter(
+#     embeds_UMAP[:, 0], embeds_UMAP[:, 1], c=color, cmap="Spectral", s=10
+# )
+# plt.setp(ax, xticks=[], yticks=[])
+# # plt.title("MNIST data embedded into two dimensions by UMAP", fontsize=18)
+#
+# plt.show()
 
 fig, ax = plt.subplots(figsize=(12, 10))
 color = L.astype(int)
 plt.scatter(
-    embeds_UMAP[:, 0], embeds_UMAP[:, 1], c=color, cmap="Spectral", s=10
+    embeds_UMAP_DGI[:, 0], embeds_UMAP_DGI[:, 1], c=color, cmap="Spectral", s=10
 )
 plt.setp(ax, xticks=[], yticks=[])
 # plt.title("MNIST data embedded into two dimensions by UMAP", fontsize=18)
 
 plt.show()
+
+X_train, X_test, Y_train, Y_test = train_test_split(embeds_TSNE_DGI, L, random_state=0)
+knc = KNeighborsClassifier(n_neighbors=1)
+knc.fit(X_train, Y_train)
+Y_pred = knc.predict(X_test)
+score = knc.score(X_test, Y_test)
+# result_org.append(score)
+print("DGI TSNE: 1-nn accuracy is ", score)
+
+# X_train, X_test, Y_train, Y_test = train_test_split(embeds_UMAP, L, random_state=0)
+# knc = KNeighborsClassifier(n_neighbors=1)
+# knc.fit(X_train, Y_train)
+# Y_pred = knc.predict(X_test)
+# score = knc.score(X_test, Y_test)
+# # result_org.append(score)
+# print("Original UMAP: 1-nn accuracy is ", score)
+
+X_train, X_test, Y_train, Y_test = train_test_split(embeds_UMAP_DGI, L, random_state=0)
+knc = KNeighborsClassifier(n_neighbors=1)
+knc.fit(X_train, Y_train)
+Y_pred = knc.predict(X_test)
+score = knc.score(X_test, Y_test)
+# result_org.append(score)
+print("DGI UMAP: 1-nn accuracy is ", score)
