@@ -73,7 +73,7 @@ import time
 
 # Input: emb_features-X, label-L, adjMatrix-A
 
-def plot_graph(X, L, A):
+def plot_graph(X, L, A, DGI=True, alpha=0.5, cmap='Spectral', s=1):
     node_pos = X
     node_num, embedding_dimension = node_pos.shape
 
@@ -84,14 +84,19 @@ def plot_graph(X, L, A):
     di_graph = nx.from_numpy_matrix(A)
     # plot using networkx with edge structure
     pos = {}
+    if not DGI:
+        width = 0.002
+    else:
+        width = 0.005
+
     for i in range(node_num):
         pos[i] = node_pos[i, :]
     if node_colors.any():
         nx.draw_networkx(di_graph, pos,
                          node_color=node_colors,
-                         width=0.1, node_size=10,
-                         arrows=False, alpha=0.8,
-                         cmap='Spectral', with_labels=False)
+                         width=width, node_size=s,
+                         arrows=False, alpha=alpha,
+                         cmap=cmap, with_labels=False)
     else:
         nx.draw_networkx(di_graph, pos, node_color=node_colors,
                          width=0.1, node_size=1, arrows=False,
@@ -508,74 +513,74 @@ def trustworthiness(X, X_embedded, n_neighbors=5, metric='euclidean', precompute
                           (2.0 * n_samples - 3.0 * n_neighbors - 1.0)))
     return t
 
-data = 'cora'
-# data = 'citeseer'
-# data = 'pubmed'
-
-DGI = True
-model = 'DGI-UMAP' if DGI else "UMAP"
-
-iter = 10
-# iter1 = str(4)
-# iter2 = str(6)
-file_path0 = "GraphTSNE/cora_data_graphtsne.npz"
-# file_path = 'GraphTSNE/embed_' + data + '_' + model + "_" + str(iter) + '.npz'
-file_path = 'GraphTSNE/embed_GraphTSNE_12_31_4_48.npz'
-file_path1 = "GraphTSNE/embed_GraphTSNE_cora12_31_7_12.npz"
-# file_path1 = 'embed_' + data + '_' + model + '_' + iter2 + 'th.npz'
-# file_path2 = 'embed_' + data + '_' + model + '_' + iter1 + 'th.npz'
-# file_path = "embed_org_NORB48600_Seed:42.npz"
-# file_path = 'embed_' + hub_org + "_coil100" + str(7200) + '_' + str(10) + '.npz'
-
-npz0 = np.load(file_path0)
-npz = np.load(file_path)
-npz1 = np.load(file_path1)
-# npz2 = np.load(file_path2)
-X = npz0['X']
-L = npz0['L']
-A = npz0['A']
-emb0 = npz['emb']
-emb1 = npz1['emb']
-# emb2 = npz2['emb']
-emb = np.vstack((emb0, emb1))
-np.savez('embed_' + data + '_' + 'GraphTSNE' + '_' + str(10), X=X, L=L, emb=emb, A=A)
-
-
-result_knn = []
-result_acc = []
-result_ari = []
-result_ami = []
-result_f1 = []
-
-for i, e in enumerate(emb):
-
-    knn_acc = nearest_neighbours_generalisation_accuracy(e, L)
-    acc, ari, ami, f1 = kmeans_acc_ari_ami_f1(e, L)
-    # save_visualization(e, L, A, dataset=data, DGI=True, i=i)
-    # visualize(e, L)
-    result_knn.append(knn_acc)
-    result_acc.append(acc)
-    result_ari.append(ari)
-    result_ami.append(ami)
-    result_f1.append(f1)
-
-print(result_knn, result_acc, result_ari, result_ami, result_f1)
-
-iter = str(10)
-
-# LOCAL accuracy ==========================
-result = np.array((result_knn, result_acc, result_ari, result_ami, result_f1))
-# with open('examples/result_org_'+data+datasize+'.csv', 'w') as f:
-np.savetxt('embed_' + data + '_' + model + iter + '.txt', result)
-
-# 統計処理
-file_path = 'embed_' + data + '_' + model + iter + '.txt'
-result_lst = np.loadtxt(file_path)
-results = DataFrame()
-results['knn'] = result_lst[0]
-results['acc'] = result_lst[1]
-results['ari'] = result_lst[2]
-results['ami'] = result_lst[3]
-results["f1"] = result_lst[4]
-# descriptive stats
-print(results.describe())
+# data = 'cora'
+# # data = 'citeseer'
+# # data = 'pubmed'
+#
+# DGI = True
+# model = 'DGI-UMAP' if DGI else "UMAP"
+#
+# iter = 10
+# # iter1 = str(4)
+# # iter2 = str(6)
+# file_path0 = "GraphTSNE/cora_data_graphtsne.npz"
+# # file_path = 'GraphTSNE/embed_' + data + '_' + model + "_" + str(iter) + '.npz'
+# file_path = 'GraphTSNE/embed_GraphTSNE_12_31_4_48.npz'
+# file_path1 = "GraphTSNE/embed_GraphTSNE_cora12_31_7_12.npz"
+# # file_path1 = 'embed_' + data + '_' + model + '_' + iter2 + 'th.npz'
+# # file_path2 = 'embed_' + data + '_' + model + '_' + iter1 + 'th.npz'
+# # file_path = "embed_org_NORB48600_Seed:42.npz"
+# # file_path = 'embed_' + hub_org + "_coil100" + str(7200) + '_' + str(10) + '.npz'
+#
+# npz0 = np.load(file_path0)
+# npz = np.load(file_path)
+# npz1 = np.load(file_path1)
+# # npz2 = np.load(file_path2)
+# X = npz0['X']
+# L = npz0['L']
+# A = npz0['A']
+# emb0 = npz['emb']
+# emb1 = npz1['emb']
+# # emb2 = npz2['emb']
+# emb = np.vstack((emb0, emb1))
+# np.savez('embed_' + data + '_' + 'GraphTSNE' + '_' + str(10), X=X, L=L, emb=emb, A=A)
+#
+#
+# result_knn = []
+# result_acc = []
+# result_ari = []
+# result_ami = []
+# result_f1 = []
+#
+# for i, e in enumerate(emb):
+#
+#     knn_acc = nearest_neighbours_generalisation_accuracy(e, L)
+#     acc, ari, ami, f1 = kmeans_acc_ari_ami_f1(e, L)
+#     # save_visualization(e, L, A, dataset=data, DGI=True, i=i)
+#     # visualize(e, L)
+#     result_knn.append(knn_acc)
+#     result_acc.append(acc)
+#     result_ari.append(ari)
+#     result_ami.append(ami)
+#     result_f1.append(f1)
+#
+# print(result_knn, result_acc, result_ari, result_ami, result_f1)
+#
+# iter = str(10)
+#
+# # LOCAL accuracy ==========================
+# result = np.array((result_knn, result_acc, result_ari, result_ami, result_f1))
+# # with open('examples/result_org_'+data+datasize+'.csv', 'w') as f:
+# np.savetxt('embed_' + data + '_' + model + iter + '.txt', result)
+#
+# # 統計処理
+# file_path = 'embed_' + data + '_' + model + iter + '.txt'
+# result_lst = np.loadtxt(file_path)
+# results = DataFrame()
+# results['knn'] = result_lst[0]
+# results['acc'] = result_lst[1]
+# results['ari'] = result_lst[2]
+# results['ami'] = result_lst[3]
+# results["f1"] = result_lst[4]
+# # descriptive stats
+# print(results.describe())

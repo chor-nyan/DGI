@@ -17,9 +17,11 @@ import random
 import networkx as nx
 
 from evaluation_metrics import nearest_neighbours_generalisation_accuracy, evaluate_viz_metrics
-from evaluate import kmeans_acc_ari_ami_f1, mantel_test
+from evaluate import kmeans_acc_ari_ami_f1, plot_graph
 
 import time
+
+# from plot_graph import plot_graph_embedding
 
 UMAP_time_lst = []
 DGI_time_lst = []
@@ -31,8 +33,8 @@ iter_n = 1
 seed_lst = random.sample(range(100), k=iter_n)
 print(seed_lst)
 
-dataset = 'cora'
-# dataset = 'citeseer'
+# dataset = 'cora'
+dataset = 'citeseer'
 # dataset = 'pubmed'
 
 for iter_number in range(iter_n):
@@ -41,7 +43,7 @@ for iter_number in range(iter_n):
 
     # training params
     batch_size = 1
-    nb_epochs = 1
+    nb_epochs = 10
     patience = 20
     lr = 0.001
     l2_coef = 0.0
@@ -260,10 +262,10 @@ for iter_number in range(iter_n):
     emb_UMAP_lst.append(embeds_UMAP)
     emb_DGIUMAP_lst.append(embeds_UMAP_cos)
 
-    file_path1 = 'embed_' + dataset + '_' + "UMAP_cos" + str(iter_number+1) + 'th'
-    file_path2 = 'embed_' + dataset + '_' + "DGI-UMAP_cos" + str(iter_number+1) + 'th'
-    np.savez(file_path1, emb=emb_UMAP_lst)
-    np.savez(file_path2, emb=emb_DGIUMAP_lst)
+    file_path1 = dataset + '_' + "UMAP_cos"
+    file_path2 = dataset + '_' + "DGI-UMAP_cos"
+    np.savez(file_path1, X=org_features, L=L, emb=embeds_UMAP, A=A)
+    np.savez(file_path2, X=org_features, L=L, emb=embeds_UMAP_cos, A=A)
 
 # DGI = True
 # model = 'DGI-UMAP' if DGI else "UMAP"
@@ -272,8 +274,14 @@ for iter_number in range(iter_n):
 # file_path2 = 'embed_' + dataset + '_' + "DGI-UMAP_" + str(iter_n)
 #
 # A = adj.todense()
-np.savez('cora_data', X = org_features, L = L, A=A)
+# np.savez('cora_data', X = org_features, L = L, A=A)
 # np.savez('cora', X = org_features, L = L, A=A)
+
+plot_graph(embeds_UMAP, L, A, DGI=False)
+plt.show()
+plot_graph(embeds_UMAP_cos, L, A)
+plt.show()
+
 
 # sns.set(context="paper", style="white")
 #
