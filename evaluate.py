@@ -73,7 +73,7 @@ import time
 
 # Input: emb_features-X, label-L, adjMatrix-A
 
-def plot_graph(X, L, A, DGI=True, alpha=0.5, cmap='Spectral', s=1):
+def plot_graph(X, L, A, width=0.1, alpha=0.5, cmap='Spectral', s=1):
     node_pos = X
     node_num, embedding_dimension = node_pos.shape
 
@@ -84,10 +84,8 @@ def plot_graph(X, L, A, DGI=True, alpha=0.5, cmap='Spectral', s=1):
     di_graph = nx.from_numpy_matrix(A)
     # plot using networkx with edge structure
     pos = {}
-    if not DGI:
-        width = 0.002
-    else:
-        width = 0.005
+
+    width = width
 
     for i in range(node_num):
         pos[i] = node_pos[i, :]
@@ -546,41 +544,41 @@ def trustworthiness(X, X_embedded, n_neighbors=5, metric='euclidean', precompute
 # np.savez('embed_' + data + '_' + 'GraphTSNE' + '_' + str(10), X=X, L=L, emb=emb, A=A)
 #
 #
-# result_knn = []
-# result_acc = []
-# result_ari = []
-# result_ami = []
-# result_f1 = []
+result_knn = []
+result_acc = []
+result_ari = []
+result_ami = []
+result_f1 = []
+
+for i, e in enumerate(emb):
+
+    knn_acc = nearest_neighbours_generalisation_accuracy(e, L)
+    acc, ari, ami, f1 = kmeans_acc_ari_ami_f1(e, L)
+    # save_visualization(e, L, A, dataset=data, DGI=True, i=i)
+    # visualize(e, L)
+    result_knn.append(knn_acc)
+    result_acc.append(acc)
+    result_ari.append(ari)
+    result_ami.append(ami)
+    result_f1.append(f1)
+
+print(result_knn, result_acc, result_ari, result_ami, result_f1)
+
+iter = str(10)
 #
-# for i, e in enumerate(emb):
-#
-#     knn_acc = nearest_neighbours_generalisation_accuracy(e, L)
-#     acc, ari, ami, f1 = kmeans_acc_ari_ami_f1(e, L)
-#     # save_visualization(e, L, A, dataset=data, DGI=True, i=i)
-#     # visualize(e, L)
-#     result_knn.append(knn_acc)
-#     result_acc.append(acc)
-#     result_ari.append(ari)
-#     result_ami.append(ami)
-#     result_f1.append(f1)
-#
-# print(result_knn, result_acc, result_ari, result_ami, result_f1)
-#
-# iter = str(10)
-#
-# # LOCAL accuracy ==========================
-# result = np.array((result_knn, result_acc, result_ari, result_ami, result_f1))
-# # with open('examples/result_org_'+data+datasize+'.csv', 'w') as f:
-# np.savetxt('embed_' + data + '_' + model + iter + '.txt', result)
-#
-# # 統計処理
-# file_path = 'embed_' + data + '_' + model + iter + '.txt'
-# result_lst = np.loadtxt(file_path)
-# results = DataFrame()
-# results['knn'] = result_lst[0]
-# results['acc'] = result_lst[1]
-# results['ari'] = result_lst[2]
-# results['ami'] = result_lst[3]
-# results["f1"] = result_lst[4]
-# # descriptive stats
-# print(results.describe())
+# LOCAL accuracy ==========================
+result = np.array((result_knn, result_acc, result_ari, result_ami, result_f1))
+# with open('examples/result_org_'+data+datasize+'.csv', 'w') as f:
+np.savetxt('embed_' + data + '_' + model + iter + '.txt', result)
+
+# 統計処理
+file_path = 'embed_' + data + '_' + model + iter + '.txt'
+result_lst = np.loadtxt(file_path)
+results = DataFrame()
+results['knn'] = result_lst[0]
+results['acc'] = result_lst[1]
+results['ari'] = result_lst[2]
+results['ami'] = result_lst[3]
+results["f1"] = result_lst[4]
+# descriptive stats
+print(results.describe())
