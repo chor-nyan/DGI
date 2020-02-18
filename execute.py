@@ -16,8 +16,8 @@ from sklearn.neighbors import KNeighborsClassifier
 import random
 import networkx as nx
 
-from evaluation_metrics import nearest_neighbours_generalisation_accuracy, evaluate_viz_metrics
-from evaluate import kmeans_acc_ari_ami_f1, plot_graph
+# from evaluation_metrics import nearest_neighbours_generalisation_accuracy, evaluate_viz_metrics
+# from evaluate import kmeans_acc_ari_ami_f1, plot_graph
 
 import time
 
@@ -43,7 +43,7 @@ for iter_number in range(iter_n):
 
     # training params
     batch_size = 1
-    nb_epochs = 10
+    nb_epochs = 200
     patience = 20
     lr = 0.001
     l2_coef = 0.0
@@ -227,6 +227,8 @@ for iter_number in range(iter_n):
 
     color = L.astype(int)
 
+    np.save("/home/hino/git/GraphTSNE/Citeseer_DGI", embeds)
+
     # start1 = time.time()
     # print("TSNE_euc start")
     # embeds_TSNE_euc = TSNE(n_components=2).fit(embeds)
@@ -245,137 +247,137 @@ for iter_number in range(iter_n):
     # elapsed_time3 = time.time() - start3
     # print(elapsed_time3)
 
-    print("UMAP_org start")
-    start5 = time.time()
-    embeds_UMAP = umap.UMAP(n_components=2, metric="cosine", random_state=seed).fit_transform(org_features)
-    elapsed_time5 = time.time() - start5
-    print(elapsed_time5)
-
-    print('UMAP_cos start')
-    start4 = time.time()
-    embeds_UMAP_cos = umap.UMAP(n_components=2, metric="cosine", random_state=seed).fit_transform(embeds)
-    elapsed_time4 = time.time() - start4
-    UMAP_time_lst.append(elapsed_time4)
-    print("UMAP_time", UMAP_time_lst)
-
-    # embeds_UMAP_DGI = umap.UMAP(n_components=2, random_state=seed).fit_transform(embeds)
-    emb_UMAP_lst.append(embeds_UMAP)
-    emb_DGIUMAP_lst.append(embeds_UMAP_cos)
-
-    file_path1 = dataset + '_' + "UMAP_cos"
-    file_path2 = dataset + '_' + "DGI-UMAP_cos"
-    np.savez(file_path1, X=org_features, L=L, emb=embeds_UMAP, A=A)
-    np.savez(file_path2, X=org_features, L=L, emb=embeds_UMAP_cos, A=A)
-
-# DGI = True
-# model = 'DGI-UMAP' if DGI else "UMAP"
+#     print("UMAP_org start")
+#     start5 = time.time()
+#     embeds_UMAP = umap.UMAP(n_components=2, metric="cosine", random_state=seed).fit_transform(org_features)
+#     elapsed_time5 = time.time() - start5
+#     print(elapsed_time5)
 #
-# file_path1 = 'embed_' + dataset + '_' + "UMAP_" + str(iter_n)
-# file_path2 = 'embed_' + dataset + '_' + "DGI-UMAP_" + str(iter_n)
+#     print('UMAP_cos start')
+#     start4 = time.time()
+#     embeds_UMAP_cos = umap.UMAP(n_components=2, metric="cosine", random_state=seed).fit_transform(embeds)
+#     elapsed_time4 = time.time() - start4
+#     UMAP_time_lst.append(elapsed_time4)
+#     print("UMAP_time", UMAP_time_lst)
 #
-# A = adj.todense()
-# np.savez('cora_data', X = org_features, L = L, A=A)
-# np.savez('cora', X = org_features, L = L, A=A)
-
-plot_graph(embeds_UMAP, L, A, DGI=False)
-plt.show()
-plot_graph(embeds_UMAP_cos, L, A)
-plt.show()
-
-
-# sns.set(context="paper", style="white")
+#     # embeds_UMAP_DGI = umap.UMAP(n_components=2, random_state=seed).fit_transform(embeds)
+#     emb_UMAP_lst.append(embeds_UMAP)
+#     emb_DGIUMAP_lst.append(embeds_UMAP_cos)
 #
-# fig, ax = plt.subplots(figsize=(12, 10))
-# color = L.astype(int)
-# plt.scatter(
-#     embeds_TSNE_DGI[:, 0], embeds_TSNE_DGI[:, 1], c=color, cmap="Spectral", s=10
-# )
-# plt.setp(ax, xticks=[], yticks=[])
-# # plt.title("MNIST data embedded into two dimensions by UMAP", fontsize=18)
+#     file_path1 = dataset + '_' + "UMAP_cos"
+#     file_path2 = dataset + '_' + "DGI-UMAP_cos"
+#     np.savez(file_path1, X=org_features, L=L, emb=embeds_UMAP, A=A)
+#     np.savez(file_path2, X=org_features, L=L, emb=embeds_UMAP_cos, A=A)
 #
+# # DGI = True
+# # model = 'DGI-UMAP' if DGI else "UMAP"
+# #
+# # file_path1 = 'embed_' + dataset + '_' + "UMAP_" + str(iter_n)
+# # file_path2 = 'embed_' + dataset + '_' + "DGI-UMAP_" + str(iter_n)
+# #
+# # A = adj.todense()
+# # np.savez('cora_data', X = org_features, L = L, A=A)
+# # np.savez('cora', X = org_features, L = L, A=A)
+#
+# plot_graph(embeds_UMAP, L, A, DGI=False)
 # plt.show()
-
-# fig, ax = plt.subplots(figsize=(12, 10))
-# color = L.astype(int)
-# plt.scatter(
-#     embeds_UMAP[:, 0], embeds_UMAP[:, 1], c=color, cmap="Spectral", s=10
-# )
-# plt.setp(ax, xticks=[], yticks=[])
-# # plt.title("MNIST data embedded into two dimensions by UMAP", fontsize=18)
-#
+# plot_graph(embeds_UMAP_cos, L, A)
 # plt.show()
-
-def plot_embedding2D(node_pos, node_colors=None, di_graph=None):
-    node_num, embedding_dimension = node_pos.shape
-    if(embedding_dimension > 2):
-        print("Embedding dimension greater than 2, use tSNE to reduce it to 2")
-        model = umap.UMAP(n_components=2)
-        node_pos = model.fit_transform(node_pos)
-
-    if di_graph is None:
-        # plot using plt scatter
-        plt.scatter(node_pos[:, 0], node_pos[:, 1], c=node_colors)
-    else:
-        # plot using networkx with edge structure
-        pos = {}
-        for i in range(node_num):
-            pos[i] = node_pos[i, :]
-        if node_colors.any():
-            nx.draw_networkx(di_graph, pos,
-                                   node_color=node_colors,
-                                   width=0.05, node_size=5,
-                                   arrows=False, alpha=0.8,
-                                   cmap='Spectral', with_labels=False)
-        else:
-            nx.draw_networkx(di_graph, pos, node_color=node_colors,
-                             width=0.1, node_size=1, arrows=False,
-                             alpha=0.8, with_labels=False, cmap='Spectral')
-
-# # 隣接行列からグラフを構成
-# G = nx.from_numpy_matrix(A)
 #
-# # 特徴行列Xがnode_pos
-# node_pos = embeds_UMAP_DGI
-
-# plot_embedding2D(node_pos, di_graph=G, node_colors=color)
-# # plot_embedding2D(embeds_UMAP, di_graph=G, node_colors=color)
 #
-# fig, ax = plt.subplots(figsize=(12, 10))
-# color = L.astype(int)
-# plt.scatter(
-#     embeds_UMAP_DGI[:, 0], embeds_UMAP_DGI[:, 1], c=color, cmap="Spectral", s=10
-# )
-# plt.setp(ax, xticks=[], yticks=[])
-# # plt.title("MNIST data embedded into two dimensions by UMAP", fontsize=18)
+# # sns.set(context="paper", style="white")
+# #
+# # fig, ax = plt.subplots(figsize=(12, 10))
+# # color = L.astype(int)
+# # plt.scatter(
+# #     embeds_TSNE_DGI[:, 0], embeds_TSNE_DGI[:, 1], c=color, cmap="Spectral", s=10
+# # )
+# # plt.setp(ax, xticks=[], yticks=[])
+# # # plt.title("MNIST data embedded into two dimensions by UMAP", fontsize=18)
+# #
+# # plt.show()
 #
-# plt.show()
-
-# high-dimensional data: X = org_features, label: L, adj-Matrix_sparse: A_sparse = adj
-
-# print("Result - Tsne_euc:")
-# result_TSNE_euc = evaluate_viz_metrics(y_emb=embeds_TSNE_euc, X=org_features, L=L, A_sparse=adj, verbose=1)
-# kmeans_acc_ari_ami_f1(X=embeds_TSNE_euc, L=L)
-# # nearest_neighbours_generalisation_accuracy(embeds_UMAP_euc, L)
-# # mantel_test(X=org_features, L=L, embed=embeds_TSNE_euc)
+# # fig, ax = plt.subplots(figsize=(12, 10))
+# # color = L.astype(int)
+# # plt.scatter(
+# #     embeds_UMAP[:, 0], embeds_UMAP[:, 1], c=color, cmap="Spectral", s=10
+# # )
+# # plt.setp(ax, xticks=[], yticks=[])
+# # # plt.title("MNIST data embedded into two dimensions by UMAP", fontsize=18)
+# #
+# # plt.show()
 #
-# print("Result - Tsne_cos:")
-# result_TSNE_cos = evaluate_viz_metrics(y_emb=embeds_TSNE_cos, X=org_features, L=L, A_sparse=adj, verbose=1)
-# kmeans_acc_ari_ami_f1(X=embeds_TSNE_cos, L=L)
-# # nearest_neighbours_generalisation_accuracy(embeds_UMAP_cos, L)
-# print("Result - UMAP_euc:")
-# result_UMAP_euc = evaluate_viz_metrics(y_emb=embeds_UMAP_euc, X=org_features, L=L, A_sparse=adj, verbose=1)
-# kmeans_acc_ari_ami_f1(X=embeds_UMAP_euc, L=L)
-# # nearest_neighbours_generalisation_accuracy(embeds_UMAP_euc, L)
-# # mantel_test(X=org_features, L=L, embed=embeds_UMAP_euc)
-print("Result - UMAP_org:")
-# result_UMAP_cos = evaluate_viz_metrics(y_emb=embeds_UMAP, X=org_features, L=L, A_sparse=adj, verbose=1)
-kmeans_acc_ari_ami_f1(X=embeds_UMAP, L=L)
-nearest_neighbours_generalisation_accuracy(embeds_UMAP, L)
-
-print("Result - UMAP_cos:")
-# result_UMAP_cos = evaluate_viz_metrics(y_emb=embeds_UMAP_cos, X=org_features, L=L, A_sparse=adj, verbose=1)
-kmeans_acc_ari_ami_f1(X=embeds_UMAP_cos, L=L)
-nearest_neighbours_generalisation_accuracy(embeds_UMAP_cos, L)
+# def plot_embedding2D(node_pos, node_colors=None, di_graph=None):
+#     node_num, embedding_dimension = node_pos.shape
+#     if(embedding_dimension > 2):
+#         print("Embedding dimension greater than 2, use tSNE to reduce it to 2")
+#         model = umap.UMAP(n_components=2)
+#         node_pos = model.fit_transform(node_pos)
+#
+#     if di_graph is None:
+#         # plot using plt scatter
+#         plt.scatter(node_pos[:, 0], node_pos[:, 1], c=node_colors)
+#     else:
+#         # plot using networkx with edge structure
+#         pos = {}
+#         for i in range(node_num):
+#             pos[i] = node_pos[i, :]
+#         if node_colors.any():
+#             nx.draw_networkx(di_graph, pos,
+#                                    node_color=node_colors,
+#                                    width=0.05, node_size=5,
+#                                    arrows=False, alpha=0.8,
+#                                    cmap='Spectral', with_labels=False)
+#         else:
+#             nx.draw_networkx(di_graph, pos, node_color=node_colors,
+#                              width=0.1, node_size=1, arrows=False,
+#                              alpha=0.8, with_labels=False, cmap='Spectral')
+#
+# # # 隣接行列からグラフを構成
+# # G = nx.from_numpy_matrix(A)
+# #
+# # # 特徴行列Xがnode_pos
+# # node_pos = embeds_UMAP_DGI
+#
+# # plot_embedding2D(node_pos, di_graph=G, node_colors=color)
+# # # plot_embedding2D(embeds_UMAP, di_graph=G, node_colors=color)
+# #
+# # fig, ax = plt.subplots(figsize=(12, 10))
+# # color = L.astype(int)
+# # plt.scatter(
+# #     embeds_UMAP_DGI[:, 0], embeds_UMAP_DGI[:, 1], c=color, cmap="Spectral", s=10
+# # )
+# # plt.setp(ax, xticks=[], yticks=[])
+# # # plt.title("MNIST data embedded into two dimensions by UMAP", fontsize=18)
+# #
+# # plt.show()
+#
+# # high-dimensional data: X = org_features, label: L, adj-Matrix_sparse: A_sparse = adj
+#
+# # print("Result - Tsne_euc:")
+# # result_TSNE_euc = evaluate_viz_metrics(y_emb=embeds_TSNE_euc, X=org_features, L=L, A_sparse=adj, verbose=1)
+# # kmeans_acc_ari_ami_f1(X=embeds_TSNE_euc, L=L)
+# # # nearest_neighbours_generalisation_accuracy(embeds_UMAP_euc, L)
+# # # mantel_test(X=org_features, L=L, embed=embeds_TSNE_euc)
+# #
+# # print("Result - Tsne_cos:")
+# # result_TSNE_cos = evaluate_viz_metrics(y_emb=embeds_TSNE_cos, X=org_features, L=L, A_sparse=adj, verbose=1)
+# # kmeans_acc_ari_ami_f1(X=embeds_TSNE_cos, L=L)
+# # # nearest_neighbours_generalisation_accuracy(embeds_UMAP_cos, L)
+# # print("Result - UMAP_euc:")
+# # result_UMAP_euc = evaluate_viz_metrics(y_emb=embeds_UMAP_euc, X=org_features, L=L, A_sparse=adj, verbose=1)
+# # kmeans_acc_ari_ami_f1(X=embeds_UMAP_euc, L=L)
+# # # nearest_neighbours_generalisation_accuracy(embeds_UMAP_euc, L)
+# # # mantel_test(X=org_features, L=L, embed=embeds_UMAP_euc)
+# print("Result - UMAP_org:")
+# # result_UMAP_cos = evaluate_viz_metrics(y_emb=embeds_UMAP, X=org_features, L=L, A_sparse=adj, verbose=1)
+# kmeans_acc_ari_ami_f1(X=embeds_UMAP, L=L)
+# nearest_neighbours_generalisation_accuracy(embeds_UMAP, L)
+#
+# print("Result - UMAP_cos:")
+# # result_UMAP_cos = evaluate_viz_metrics(y_emb=embeds_UMAP_cos, X=org_features, L=L, A_sparse=adj, verbose=1)
+# kmeans_acc_ari_ami_f1(X=embeds_UMAP_cos, L=L)
+# nearest_neighbours_generalisation_accuracy(embeds_UMAP_cos, L)
 
 # score = nearest_neighbours_generalisation_accuracy(embeds_TSNE_euc, L)
 
